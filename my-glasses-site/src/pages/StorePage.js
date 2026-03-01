@@ -43,12 +43,6 @@ export default function StorePage({ navigate }) {
 
   return (
     <main className="max-w-6xl mx-auto px-6 py-16">
-      {/* Header */}
-      <header className="mb-14 text-center">
-        <p className="text-xs tracking-[0.5em] uppercase text-zinc-400 mb-2">The Collection</p>
-        <h1 className="text-3xl font-light tracking-[0.3em] uppercase text-zinc-900">Optical Frames</h1>
-      </header>
-
       {/* Product grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
         {products.map(product => (
