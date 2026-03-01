@@ -113,10 +113,10 @@ if (db.count('products') === 0) {
   const products = [
     {
       name: 'MONOLIX', brand: 'DITA Eyewear', svg_type: 'monolix',
-      base_price: 495,
-      description: 'A bold, rounded frame inspired by mid-century design. Crafted from premium Japanese acetate with titanium core wire.',
-      images: [], colors: ['Black', 'Tortoise', 'Crystal', 'Navy'],
-      sizes:  ['44 (Narrow)', '46 (Average)', '49 (Wide)', '52 (Extra Wide)'],
+      base_price: 565,
+      description: 'An architectural statement in premium Japanese acetate with an etched titanium core wire at the temples. Features DITA\'s signature 5-barrel, 4-hex screw hinge and diamond-pressed titanium nose pads. Frame: 50-22-148. Handcrafted in Japan. SKU: DTX750.',
+      images: [], colors: ['Black', 'Dusk Blue', 'Crystal'],
+      sizes:  ['50-22-148 (Standard)', '52-24-148 (Wide)'],
     },
     {
       name: 'GRANDMASTER', brand: 'DITA Eyewear', svg_type: 'grandmaster',

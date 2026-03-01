@@ -72,7 +72,7 @@ function ProductCard({ product, onClick }) {
       {/* Preview */}
       <div className="bg-zinc-50 rounded-lg px-8 py-10 mb-5 flex items-center justify-center
                       group-hover:bg-zinc-100 transition-colors duration-300">
-        <GlassesPreview svgType={product.svg_type} lensConfig={DEFAULT_CONFIG} />
+        <GlassesPreview svgType={product.svg_type} lensConfig={DEFAULT_CONFIG} frameColor={product.colors?.[0]} />
       </div>
 
       {/* Info */}

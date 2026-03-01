@@ -203,7 +203,7 @@ export default function ProductPage({ product, navigate }) {
         </div>
 
         {/* SVG preview */}
-        <GlassesPreview svgType={product.svg_type} lensConfig={lensConfig} />
+        <GlassesPreview svgType={product.svg_type} lensConfig={lensConfig} frameColor={selectedColor} />
 
         {/* Summary */}
         <div className="text-center space-y-1">
