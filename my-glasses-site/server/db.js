@@ -12,7 +12,12 @@ const fs     = require('fs');
 const path   = require('path');
 const bcrypt = require('bcryptjs');
 
-const DATA_FILE = path.join(__dirname, 'data.json');
+/* Netlify Functions run on AWS Lambda — the only writable path is /tmp.
+   For local development the file sits beside this script as usual.       */
+const IS_LAMBDA = !!(process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.LAMBDA_TASK_ROOT);
+const DATA_FILE = IS_LAMBDA
+  ? '/tmp/glasses-data.json'
+  : path.join(__dirname, 'data.json');
 
 const EMPTY = {
   _counters:      { products: 0, tints: 0, users: 0, configurations: 0, orders: 0 },
