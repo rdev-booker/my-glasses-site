@@ -1,31 +1,21 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    GlassesPreview
    Renders an SVG frame with a tinted lens overlay using multiply blend mode.
-
-   Visual technique:
-   1. Each lens has a white background rect — multiply blend needs a light base.
-   2. A colored gradient fill sits on top with mixBlendMode:'multiply'.
-      Multiply over white produces the realistic glass color.
-   3. Thin glare highlights add depth.
-   4. SVG uses isolation:'isolate' to confine blend modes to its stacking context.
 ───────────────────────────────────────────────────────────────────────────── */
 
 /* ── Frame color palette ─────────────────────────────────────────────────── */
 
 const FRAME_PALETTE = {
-  /* MONOLIX */
-  'Black':        { fill: '#0c0c0c',                  stroke: '#2a2a2a', crystal: false },
-  'Dusk Blue':    { fill: '#1b2d4a',                  stroke: '#243d64', crystal: false },
-  'Navy':         { fill: '#0d1b35',                  stroke: '#1a2d50', crystal: false },
-  'Crystal':      { fill: 'rgba(210,220,232,0.42)',   stroke: 'rgba(155,180,210,0.70)', crystal: true  },
-  'Tortoise':     { fill: '#5c3617',                  stroke: '#7a4e28', crystal: false },
-  /* GRANDMASTER */
-  'Gold':         { fill: '#b8922a',                  stroke: '#d4aa3c', crystal: false },
-  'Silver':       { fill: '#7a7a8a',                  stroke: '#9a9aac', crystal: false },
-  'Gunmetal':     { fill: '#38383f',                  stroke: '#4e4e58', crystal: false },
-  'Rose Gold':    { fill: '#aa6a58',                  stroke: '#c48878', crystal: false },
-  /* LANCIER */
-  'Antique Gold': { fill: '#8a7040',                  stroke: '#a08850', crystal: false },
+  'Black':        { fill: '#111111', hilight: '#2a2a2a', crystal: false },
+  'Dusk Blue':    { fill: '#1b2d4a', hilight: '#2a4268', crystal: false },
+  'Navy':         { fill: '#0d1b35', hilight: '#1a2d50', crystal: false },
+  'Crystal':      { fill: 'rgba(205,218,234,0.46)', hilight: 'rgba(230,238,248,0.55)', crystal: true },
+  'Tortoise':     { fill: '#5a3316', hilight: '#7a4e28', crystal: false },
+  'Gold':         { fill: '#b8922a', hilight: '#d4aa3c', crystal: false },
+  'Silver':       { fill: '#78788a', hilight: '#9a9aac', crystal: false },
+  'Gunmetal':     { fill: '#38383f', hilight: '#4e4e58', crystal: false },
+  'Rose Gold':    { fill: '#aa6a58', hilight: '#c48878', crystal: false },
+  'Antique Gold': { fill: '#8a7040', hilight: '#a08850', crystal: false },
 };
 
 function resolveFrame(name) {
@@ -45,22 +35,18 @@ function GradientDefs({ style, left, right, tolerance }) {
     const op     = (lens.density / 100).toFixed(2);
     const fadeOp = ((lens.density * 0.08) / 100).toFixed(2);
 
-    if (style === 'Solid') {
-      return (
-        <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor={c1} stopOpacity={op} />
-          <stop offset="100%" stopColor={c1} stopOpacity={op} />
-        </linearGradient>
-      );
-    }
-    if (style === 'Gradient') {
-      return (
-        <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor={c1} stopOpacity={op}     />
-          <stop offset="100%" stopColor={c1} stopOpacity={fadeOp} />
-        </linearGradient>
-      );
-    }
+    if (style === 'Solid') return (
+      <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stopColor={c1} stopOpacity={op} />
+        <stop offset="100%" stopColor={c1} stopOpacity={op} />
+      </linearGradient>
+    );
+    if (style === 'Gradient') return (
+      <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%"   stopColor={c1} stopOpacity={op}     />
+        <stop offset="100%" stopColor={c1} stopOpacity={fadeOp} />
+      </linearGradient>
+    );
     return (
       <linearGradient key={id} id={id} x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%"   stopColor={c1} stopOpacity={op} />
@@ -80,150 +66,156 @@ function GradientDefs({ style, left, right, tolerance }) {
 }
 
 /* ── MONOLIX — DITA DTX750 ────────────────────────────────────────────────
-   Proportions based on the real frame: lens 50 × 34 mm, bridge 22 mm.
-   Scale ≈ 3.6 px/mm.
+   The entire front piece is ONE compound path (fillRule=evenodd) so the
+   frame reads as a single slab of acetate with two lens cutouts — this is
+   how the real MONOLIX looks from the front.
 
-   ViewBox 560 × 188
-   Left frame   x=58  y=22  w=184 h=138  rx=7   right-edge=242
-   Right frame  x=318 y=22  w=184 h=138  rx=7   left-edge=318
-   Bridge       x=242 y=60  w=76  h=18   rx=6
-   Left lens    x=76  y=40  w=148 h=102  rx=4
-   Right lens   x=336 y=40  w=148 h=102  rx=4
+   Scale: ~3.2 px / mm   (lens 50 mm → 160 px,  bridge 22 mm → 70 px)
+   ViewBox: 514 × 178
 
-   Temple arms start at the outer frame edges (x=58, x=502) and extend
-   nearly horizontally — only ~4 px drop over 56 px run (≈4°).
+   Outer frame slab : x=42  y=14  w=430  h=150  rx=8   → right edge x=472
+   Left  lens hole  : x=62  y=34  w=160  h=110  rx=5   → right edge x=222
+   Bridge (solid)   : x=222 … x=292   (70 px ≈ 22 mm)
+   Right lens hole  : x=292 y=34  w=160  h=110  rx=5   → right edge x=452
+   Rim all sides    : 20 px  top/bottom,  20 px left/right outer edge
+   Temple arms      : extend 42 px beyond each outer edge, nearly horizontal
 ────────────────────────────────────────────────────────────────────────── */
 
 function MonolixFrame({ lensConfig, frameColor }) {
   const fc   = resolveFrame(frameColor);
-  const FILL = fc.fill;
-  const STRK = fc.stroke;
+  const F    = fc.fill;
+  const H    = fc.hilight;
   const GOLD = '#c9a336';
   const G2   = '#9a7828';
   const TR   = 'all 0.45s ease';
 
+  /*
+   * Compound frame path (evenodd) — outer rect MINUS two lens holes.
+   * Each sub-path is a rounded-rect drawn as M/Q/H/V/Z.
+   */
+  const outerPath =
+    'M50,14 H464 Q472,14 472,22 V156 Q472,164 464,164 H50 Q42,164 42,156 V22 Q42,14 50,14 Z';
+
+  /* Left lens hole  x=62 y=34 w=160 h=110 rx=5 */
+  const leftHole =
+    'M62,39 Q62,34 67,34 H217 Q222,34 222,39 V139 Q222,144 217,144 H67 Q62,144 62,139 Z';
+
+  /* Right lens hole  x=292 y=34 w=160 h=110 rx=5 */
+  const rightHole =
+    'M292,39 Q292,34 297,34 H447 Q452,34 452,39 V139 Q452,144 447,144 H297 Q292,144 292,139 Z';
+
+  const framePath = `${outerPath} ${leftHole} ${rightHole}`;
+
   return (
     <svg
-      viewBox="0 0 560 188"
+      viewBox="0 0 514 178"
       xmlns="http://www.w3.org/2000/svg"
       style={{ isolation: 'isolate' }}
-      className="w-full max-w-2xl drop-shadow-[0_18px_44px_rgba(0,0,0,0.48)]"
+      className="w-full max-w-2xl drop-shadow-[0_16px_40px_rgba(0,0,0,0.52)]"
     >
       <GradientDefs {...lensConfig} />
 
       <defs>
-        {/* Acetate top-edge sheen */}
-        <linearGradient id="sheenV" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="rgba(255,255,255,0.14)" />
-          <stop offset="45%"  stopColor="rgba(255,255,255,0.03)" />
+        {/* Top-edge sheen gradient for acetate depth */}
+        <linearGradient id="acSheen" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="rgba(255,255,255,0.18)" />
+          <stop offset="35%"  stopColor="rgba(255,255,255,0.05)" />
           <stop offset="100%" stopColor="rgba(0,0,0,0.00)"       />
         </linearGradient>
-        {/* Side-edge sheen (left-to-right) for temple arms */}
-        <linearGradient id="sheenH" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%"   stopColor="rgba(255,255,255,0.10)" />
-          <stop offset="100%" stopColor="rgba(0,0,0,0.00)"       />
-        </linearGradient>
+        {/* Clip for top-sheen rect — keep it inside the frame slab */}
+        <clipPath id="frameClip">
+          <rect x="42" y="14" width="430" height="150" rx="8" />
+        </clipPath>
       </defs>
 
-      {/* ══ Temple arms ═══════════════════════════════════════════════════════
-          Nearly horizontal — 4 px drop over 56 px run (≈4°).
-          Hinge end: x=58  (left frame outer-left edge)
-          Far end:   x=2   (just inside left viewport edge)
-          Thickness at both ends: 26 px                                    */}
-      {/* Left temple */}
-      <path d="M58,60 L58,86 L2,90 L2,64 Z" fill={FILL} />
-      {/* Left temple top sheen */}
-      <path d="M58,60 L2,64 L2,68 L58,64 Z" fill="rgba(255,255,255,0.08)" />
+      {/* ══ Temple arms ════════════════════════════════════════════════════
+          Thick acetate bars — nearly horizontal (3 px drop / 42 px run).
+          Left : x 42 → 0,   Right : x 472 → 514
+          Arm height 34 px at hinge  (same thick acetate as the frame)    */}
+      <path d="M42,67 L42,101 L0,104 L0,70 Z"     fill={F} />
+      <path d="M42,67 L0,70  L0,74  L42,71 Z"     fill="rgba(255,255,255,0.09)" />
 
-      {/* Right temple */}
-      <path d="M502,60 L502,86 L558,90 L558,64 Z" fill={FILL} />
-      <path d="M502,60 L558,64 L558,68 L502,64 Z" fill="rgba(255,255,255,0.08)" />
+      <path d="M472,67 L472,101 L514,104 L514,70 Z" fill={F} />
+      <path d="M472,67 L514,70 L514,74 L472,71 Z"   fill="rgba(255,255,255,0.09)" />
 
-      {/* ══ Left frame body ═══════════════════════════════════════════════════ */}
-      <rect x="58" y="22" width="184" height="138" rx="7" fill={FILL} />
+      {/* ══ Frame body — ONE slab with two lens cutouts ════════════════════ */}
+      <path d={framePath} fillRule="evenodd" fill={F} />
+
+      {/* Crystal: add a visible outline so the transparent slab reads */}
       {fc.crystal && (
-        <rect x="58" y="22" width="184" height="138" rx="7"
-              fill="none" stroke={STRK} strokeWidth="2.5" />
+        <path d={framePath} fillRule="evenodd"
+              fill="none" stroke="rgba(160,185,215,0.75)" strokeWidth="1.8" />
       )}
-      {/* Acetate sheen overlay */}
-      <rect x="58" y="22" width="184" height="138" rx="7" fill="url(#sheenV)" />
 
-      {/* Lens opening */}
-      <rect x="76" y="40" width="148" height="102" rx="4" fill="white" />
-      <rect x="76" y="40" width="148" height="102" rx="4"
+      {/* Acetate top-edge sheen (clipped to frame slab) */}
+      <rect x="42" y="14" width="430" height="56" rx="8"
+            fill="url(#acSheen)" clipPath="url(#frameClip)" />
+
+      {/* Bridge top highlight — shows the edge of the bridge "shelf" */}
+      <rect x="222" y="14" width="70" height="6" rx="0"
+            fill={H} opacity="0.55" clipPath="url(#frameClip)" />
+
+      {/* ══ Left lens glass ═══════════════════════════════════════════════ */}
+      {/* White base — multiply blend needs a light ground */}
+      <rect x="62" y="34" width="160" height="110" rx="5" fill="white" />
+      {/* Tint layer */}
+      <rect x="62" y="34" width="160" height="110" rx="5"
             fill="url(#lensLeft)"
             style={{ mixBlendMode: 'multiply', transition: TR }} />
-      {/* Inner bevel */}
-      <rect x="76" y="40" width="148" height="102" rx="4"
-            fill="none" stroke="rgba(0,0,0,0.16)" strokeWidth="1.5" />
+      {/* Inner bevel shadow */}
+      <rect x="62" y="34" width="160" height="110" rx="5"
+            fill="none" stroke="rgba(0,0,0,0.16)" strokeWidth="2" />
 
-      {/* ══ Right frame body ══════════════════════════════════════════════════ */}
-      <rect x="318" y="22" width="184" height="138" rx="7" fill={FILL} />
-      {fc.crystal && (
-        <rect x="318" y="22" width="184" height="138" rx="7"
-              fill="none" stroke={STRK} strokeWidth="2.5" />
-      )}
-      <rect x="318" y="22" width="184" height="138" rx="7" fill="url(#sheenV)" />
-
-      <rect x="336" y="40" width="148" height="102" rx="4" fill="white" />
-      <rect x="336" y="40" width="148" height="102" rx="4"
+      {/* ══ Right lens glass ══════════════════════════════════════════════ */}
+      <rect x="292" y="34" width="160" height="110" rx="5" fill="white" />
+      <rect x="292" y="34" width="160" height="110" rx="5"
             fill="url(#lensRight)"
             style={{ mixBlendMode: 'multiply', transition: TR }} />
-      <rect x="336" y="40" width="148" height="102" rx="4"
-            fill="none" stroke="rgba(0,0,0,0.16)" strokeWidth="1.5" />
+      <rect x="292" y="34" width="160" height="110" rx="5"
+            fill="none" stroke="rgba(0,0,0,0.16)" strokeWidth="2" />
 
-      {/* ══ Bridge ════════════════════════════════════════════════════════════
-          Sits in the upper third — typical MONOLIX keyhole bridge position.
-          x=242 (left frame right-edge) to x=318 (right frame left-edge).  */}
-      <rect x="242" y="60" width="76" height="18" rx="6" fill={FILL} />
-      {fc.crystal && (
-        <rect x="242" y="60" width="76" height="18" rx="6"
-              fill="none" stroke={STRK} strokeWidth="1.5" />
-      )}
-
-      {/* ══ 5-barrel hinge hardware (gold) ═══════════════════════════════════
-          Straddles each frame outer edge — extends 16 px outward.          */}
+      {/* ══ 5-barrel hinge hardware (gold) ════════════════════════════════
+          Straddles each outer edge — extends 18 px beyond frame edge.    */}
       {/* Left hinge */}
-      <rect x="40" y="62" width="24" height="34" rx="4.5" fill={GOLD} />
-      {[70, 77, 84, 91].map(y => (
-        <line key={y} x1="40" y1={y} x2="64" y2={y}
-              stroke={G2} strokeWidth="1.1" opacity="0.70" />
+      <rect x="24" y="69" width="24" height="34" rx="4.5" fill={GOLD} />
+      {[77, 84, 91, 98].map(y => (
+        <line key={y} x1="24" y1={y} x2="48" y2={y}
+              stroke={G2} strokeWidth="1.1" opacity="0.68" />
       ))}
       {/* Right hinge */}
-      <rect x="496" y="62" width="24" height="34" rx="4.5" fill={GOLD} />
-      {[70, 77, 84, 91].map(y => (
-        <line key={y} x1="496" y1={y} x2="520" y2={y}
-              stroke={G2} strokeWidth="1.1" opacity="0.70" />
+      <rect x="466" y="69" width="24" height="34" rx="4.5" fill={GOLD} />
+      {[77, 84, 91, 98].map(y => (
+        <line key={y} x1="466" y1={y} x2="490" y2={y}
+              stroke={G2} strokeWidth="1.1" opacity="0.68" />
       ))}
 
-      {/* ══ 4-hex screws on frame face (left frame left margin) ══════════════
-          cx=67 sits in the 18 px rim between frame edge (58) and lens (76). */}
-      <circle cx="68" cy="70"  r="5" fill={GOLD} />
-      <circle cx="68" cy="70"  r="2.4" fill={G2} />
-      <circle cx="68" cy="112" r="5" fill={GOLD} />
-      <circle cx="68" cy="112" r="2.4" fill={G2} />
-      {/* Right frame right margin (336+148=484 lens right; frame right=502) */}
-      <circle cx="492" cy="70"  r="5" fill={GOLD} />
-      <circle cx="492" cy="70"  r="2.4" fill={G2} />
-      <circle cx="492" cy="112" r="5" fill={GOLD} />
-      <circle cx="492" cy="112" r="2.4" fill={G2} />
+      {/* ══ 4-hex screws on frame face ═════════════════════════════════════
+          In the 20 px left/right rim — cx = frame_edge + 10 px           */}
+      {/* Left rim: frame x=42, lens x=62 → cx=52 */}
+      <circle cx="52" cy="77"  r="4.5" fill={GOLD} />
+      <circle cx="52" cy="77"  r="2.2" fill={G2}   />
+      <circle cx="52" cy="113" r="4.5" fill={GOLD} />
+      <circle cx="52" cy="113" r="2.2" fill={G2}   />
+      {/* Right rim: lens ends x=452, frame ends x=472 → cx=462 */}
+      <circle cx="462" cy="77"  r="4.5" fill={GOLD} />
+      <circle cx="462" cy="77"  r="2.2" fill={G2}   />
+      <circle cx="462" cy="113" r="4.5" fill={GOLD} />
+      <circle cx="462" cy="113" r="2.2" fill={G2}   />
 
-      {/* ══ Titanium nose pads ════════════════════════════════════════════════ */}
-      <ellipse cx="244" cy="80" rx="3.5" ry="5" fill={GOLD} opacity="0.85" />
-      <ellipse cx="316" cy="80" rx="3.5" ry="5" fill={GOLD} opacity="0.85" />
+      {/* ══ Diamond-pressed titanium nose pads ════════════════════════════ */}
+      <ellipse cx="224" cy="98" rx="3.5" ry="5" fill={GOLD} opacity="0.88" />
+      <ellipse cx="290" cy="98" rx="3.5" ry="5" fill={GOLD} opacity="0.88" />
 
-      {/* ══ Lens glare highlights ═════════════════════════════════════════════ */}
-      <rect x="88"  y="52" width="54" height="8" rx="3.5"
-            fill="white" fillOpacity="0.40" />
-      <rect x="348" y="52" width="54" height="8" rx="3.5"
-            fill="white" fillOpacity="0.40" />
+      {/* ══ Lens glare highlights ══════════════════════════════════════════ */}
+      <rect x="74"  y="46" width="52" height="8" rx="3.5"
+            fill="white" fillOpacity="0.44" />
+      <rect x="304" y="46" width="52" height="8" rx="3.5"
+            fill="white" fillOpacity="0.44" />
 
-      {/* ══ Subtle DITA temple text ═══════════════════════════════════════════ */}
-      <text x="486" y="128" fontSize="7" fill="rgba(255,255,255,0.07)"
+      {/* ══ DITA temple text (almost invisible, purely decorative) ═════════ */}
+      <text x="454" y="128" fontSize="6.5" fill="rgba(255,255,255,0.06)"
             fontFamily="serif" letterSpacing="1.5" textAnchor="middle"
-            style={{ userSelect: 'none' }}>
-        DITA
-      </text>
+            style={{ userSelect: 'none' }}>DITA</text>
     </svg>
   );
 }
@@ -233,7 +225,7 @@ function MonolixFrame({ lensConfig, frameColor }) {
 function GrandmasterFrame({ lensConfig, frameColor }) {
   const fc    = resolveFrame(frameColor);
   const FRAME = fc.fill;
-  const EDGE  = fc.stroke;
+  const EDGE  = fc.hilight;
   const TR    = 'all 0.45s ease';
 
   const leftLens  = 'M 43,50 Q 43,38 55,34 L 235,34 Q 248,34 250,50 L 252,130 Q 252,175 200,178 L 97,178 Q 44,178 43,130 Z';
@@ -291,7 +283,7 @@ function GrandmasterFrame({ lensConfig, frameColor }) {
 function LancierFrame({ lensConfig, frameColor }) {
   const fc    = resolveFrame(frameColor);
   const FRAME = fc.fill;
-  const EDGE  = fc.stroke;
+  const EDGE  = fc.hilight;
   const TR    = 'all 0.45s ease';
 
   return (
