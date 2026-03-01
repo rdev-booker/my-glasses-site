@@ -168,7 +168,7 @@ if (db.count('tints') === 0) {
 /* ── Seed admin account on first run ──────────────────────────────────────── */
 
 if (!db.findOne('users', { is_admin: true })) {
-  const adminEmail    = process.env.ADMIN_EMAIL    || 'admin@dita.com';
+  const adminEmail    = process.env.ADMIN_EMAIL    || 'rdev@bookerhq.ca';
   const adminPassword = process.env.ADMIN_PASSWORD || 'admin123456';
   const passwordHash  = bcrypt.hashSync(adminPassword, 12);
   db.insert('users', {
