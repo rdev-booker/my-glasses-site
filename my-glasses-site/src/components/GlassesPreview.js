@@ -62,31 +62,31 @@ function GradientDefs({ style, left, right, tolerance }) {
 }
 
 /* ── MONOLIX — DITA DTX750 ───────────────────────────────────────────────────
-   Two separate filled frame rings + slim bridge + chunky horizontal temples.
-   Each frame ring = filled rect (the thick acetate).
-   The lens glass = white rect + tint overlay (sits on top of the ring).
+   Ultra-thick acetate frame matching real DITA MONOLIX proportions.
+   Two frame rings each with ~42px rim all sides (thick slab look).
+   No protruding hinge hardware — flush silver screws on frame face only.
 
-   Scale ≈ 3.2 px/mm.  ViewBox 524 × 196.
+   Scale ≈ 2.5 px/mm.  ViewBox 540 × 210.
 
-   Left  ring   x=50  y=26  w=192  h=144  rx=6   right-edge = 242
-   Bridge       x=242 y=68  w=40   h=14   rx=5   (40px = 12.5mm ≈ keyhole bridge)
-   Right ring   x=282 y=26  w=192  h=144  rx=6   right-edge = 474
-   Left  lens   x=72  y=48  w=148  h=100  rx=3   (22px rim all sides)
-   Right lens   x=304 y=48  w=148  h=100  rx=3
-   Temples      x≈2…52 left,  x≈472…522 right,  34px tall, almost horizontal
+   Left  ring   x=44  y=24  w=204  h=158  rx=10   right-edge = 248
+   Bridge       x=248 y=70  w=44   h=18   rx=6    (slim connector)
+   Right ring   x=292 y=24  w=204  h=158  rx=10   right-edge = 496
+   Left  lens   x=86  y=57  w=120  h=90   rx=7    (42px sides, 33px top/bot)
+   Right lens   x=334 y=57  w=120  h=90   rx=7
+   Temples      x≈2…44 left,  x≈496…538 right,  40px tall, nearly flat
 ────────────────────────────────────────────────────────────────────────── */
 
 function MonolixFrame({ lensConfig, frameColor }) {
-  const fc   = resolveFrame(frameColor);
-  const F    = fc.fill;
-  const HI   = fc.hi;
-  const GOLD = '#c9a336';
-  const G2   = '#9a7828';
-  const TR   = 'all 0.45s ease';
+  const fc    = resolveFrame(frameColor);
+  const F     = fc.fill;
+  const HI    = fc.hi;
+  const SCREW = '#c0c0c0';   // silver screw face
+  const SCREW2 = '#888';     // screw recess
+  const TR    = 'all 0.45s ease';
 
   return (
     <svg
-      viewBox="0 0 524 196"
+      viewBox="0 0 540 210"
       xmlns="http://www.w3.org/2000/svg"
       style={{ isolation: 'isolate' }}
       className="w-full max-w-2xl drop-shadow-[0_14px_36px_rgba(0,0,0,0.50)]"
@@ -94,114 +94,95 @@ function MonolixFrame({ lensConfig, frameColor }) {
       <GradientDefs {...lensConfig} />
 
       <defs>
-        {/* Lens inner-bevel sheen: bright top edge fades quickly */}
         <linearGradient id="lensSheen" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stopColor="rgba(255,255,255,0.22)" />
-          <stop offset="18%"  stopColor="rgba(255,255,255,0.00)" />
+          <stop offset="20%"  stopColor="rgba(255,255,255,0.00)" />
           <stop offset="100%" stopColor="rgba(0,0,0,0.04)"       />
+        </linearGradient>
+        {/* Subtle top-to-bottom depth on acetate face */}
+        <linearGradient id="acetateFace" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="rgba(255,255,255,0.10)" />
+          <stop offset="100%" stopColor="rgba(0,0,0,0.06)" />
         </linearGradient>
       </defs>
 
-      {/* ══ Temple arms ════════════════════════════════════════════════════
-          34 px tall, 2 px downward drop over 48 px run (≈2° — flat).
-          Polygon shape: thick solid bar identical to real acetate temple.  */}
+      {/* ── Temple arms: thick slab, nearly horizontal ──────────────────────
+          40px tall, 2px downward slope over 42px run (≈3°, almost flat).
+          Drawn first so frame rings overlap the join seamlessly.          */}
 
-      {/* Left: hinge at x=50, arm extends left to x=2 */}
-      <path d="M50,82 L50,116 L2,118 L2,84 Z" fill={F} />
-      {/* Top-surface sheen (the flat top face of the thick arm catches light) */}
-      <path d="M50,82 L2,84 L2,88 L50,86 Z"  fill={HI} opacity="0.60" />
-      {/* Bottom-edge shadow */}
-      <path d="M50,113 L50,116 L2,118 L2,115 Z" fill="rgba(0,0,0,0.22)" />
+      {/* Left arm: x=2→44, y centred at frame midpoint (103) */}
+      <path d="M44,83 L44,123 L2,125 L2,85 Z" fill={F} />
+      <path d="M44,83 L2,85 L2,89 L44,87 Z"   fill={HI} opacity="0.52" />
+      <path d="M44,120 L44,123 L2,125 L2,122 Z" fill="rgba(0,0,0,0.22)" />
 
-      {/* Right: hinge at x=474, arm extends right to x=522 */}
-      <path d="M474,82 L474,116 L522,118 L522,84 Z" fill={F} />
-      <path d="M474,82 L522,84 L522,88 L474,86 Z"   fill={HI} opacity="0.60" />
-      <path d="M474,113 L474,116 L522,118 L522,115 Z" fill="rgba(0,0,0,0.22)" />
+      {/* Right arm: x=496→538 */}
+      <path d="M496,83 L496,123 L538,125 L538,85 Z" fill={F} />
+      <path d="M496,83 L538,85 L538,89 L496,87 Z"   fill={HI} opacity="0.52" />
+      <path d="M496,120 L496,123 L538,125 L538,122 Z" fill="rgba(0,0,0,0.22)" />
 
-      {/* ══ Left frame ring ════════════════════════════════════════════════ */}
-      <rect x="50" y="26" width="192" height="144" rx="6" fill={F} />
-      {/* Top-edge sheen: the top surface of the thick acetate frame */}
-      <rect x="50" y="26" width="192" height="7"   rx="6" fill={HI} opacity="0.58" />
-      {/* Crystal: visible outline */}
+      {/* ── Left frame ring ─────────────────────────────────────────────────
+          Thick 204×158 slab with 42px rim — same chunky look as real MONOLIX */}
+      <rect x="44" y="24" width="204" height="158" rx="10" fill={F} />
+      <rect x="44" y="24" width="204" height="158" rx="10" fill="url(#acetateFace)" />
+      {/* Top-edge sheen: brightest light on the flat top surface */}
+      <rect x="44" y="24" width="204" height="8"   rx="10" fill={HI} opacity="0.55" />
       {fc.crystal && (
-        <rect x="50" y="26" width="192" height="144" rx="6"
-              fill="none" stroke="rgba(140,178,216,0.80)" strokeWidth="2" />
+        <rect x="44" y="24" width="204" height="158" rx="10"
+              fill="none" stroke="rgba(140,178,216,0.82)" strokeWidth="2" />
       )}
 
-      {/* ══ Right frame ring ═══════════════════════════════════════════════ */}
-      <rect x="282" y="26" width="192" height="144" rx="6" fill={F} />
-      <rect x="282" y="26" width="192" height="7"   rx="6" fill={HI} opacity="0.58" />
+      {/* ── Right frame ring ────────────────────────────────────────────────  */}
+      <rect x="292" y="24" width="204" height="158" rx="10" fill={F} />
+      <rect x="292" y="24" width="204" height="158" rx="10" fill="url(#acetateFace)" />
+      <rect x="292" y="24" width="204" height="8"   rx="10" fill={HI} opacity="0.55" />
       {fc.crystal && (
-        <rect x="282" y="26" width="192" height="144" rx="6"
-              fill="none" stroke="rgba(140,178,216,0.80)" strokeWidth="2" />
+        <rect x="292" y="24" width="204" height="158" rx="10"
+              fill="none" stroke="rgba(140,178,216,0.82)" strokeWidth="2" />
       )}
 
-      {/* ══ Bridge — slim connector at upper-third of frame height ══════════
-          x=242 (left ring right-edge) → x=282 (right ring left-edge)     */}
-      <rect x="242" y="68" width="40" height="14" rx="5" fill={F} />
-      <rect x="242" y="68" width="40" height="5"  rx="5" fill={HI} opacity="0.50" />
+      {/* ── Bridge — slim connector, upper-third height ──────────────────── */}
+      <rect x="248" y="70" width="44" height="18" rx="6" fill={F} />
+      <rect x="248" y="70" width="44" height="6"  rx="6" fill={HI} opacity="0.48" />
 
-      {/* ══ Left lens glass ════════════════════════════════════════════════
-          Sits on top of the frame ring, covering the lens area only.      */}
-      <rect x="72"  y="48" width="148" height="100" rx="3" fill="white" />
-      <rect x="72"  y="48" width="148" height="100" rx="3"
-            fill="url(#lensLeft)"
-            style={{ mixBlendMode: 'multiply', transition: TR }} />
-      {/* Inner bevel: bright top, slight darkening bottom */}
-      <rect x="72"  y="48" width="148" height="100" rx="3" fill="url(#lensSheen)" />
-      <rect x="72"  y="48" width="148" height="100" rx="3"
-            fill="none" stroke="rgba(0,0,0,0.20)" strokeWidth="1.5" />
+      {/* ── Left lens glass ─────────────────────────────────────────────────
+          White base for multiply blend; 42px rim on sides, 33px top/bot   */}
+      <rect x="86"  y="57" width="120" height="90" rx="7" fill="white" />
+      <rect x="86"  y="57" width="120" height="90" rx="7"
+            fill="url(#lensLeft)" style={{ mixBlendMode: 'multiply', transition: TR }} />
+      <rect x="86"  y="57" width="120" height="90" rx="7" fill="url(#lensSheen)" />
+      <rect x="86"  y="57" width="120" height="90" rx="7"
+            fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1.5" />
 
-      {/* ══ Right lens glass ═══════════════════════════════════════════════ */}
-      <rect x="304" y="48" width="148" height="100" rx="3" fill="white" />
-      <rect x="304" y="48" width="148" height="100" rx="3"
-            fill="url(#lensRight)"
-            style={{ mixBlendMode: 'multiply', transition: TR }} />
-      <rect x="304" y="48" width="148" height="100" rx="3" fill="url(#lensSheen)" />
-      <rect x="304" y="48" width="148" height="100" rx="3"
-            fill="none" stroke="rgba(0,0,0,0.20)" strokeWidth="1.5" />
+      {/* ── Right lens glass ─────────────────────────────────────────────── */}
+      <rect x="334" y="57" width="120" height="90" rx="7" fill="white" />
+      <rect x="334" y="57" width="120" height="90" rx="7"
+            fill="url(#lensRight)" style={{ mixBlendMode: 'multiply', transition: TR }} />
+      <rect x="334" y="57" width="120" height="90" rx="7" fill="url(#lensSheen)" />
+      <rect x="334" y="57" width="120" height="90" rx="7"
+            fill="none" stroke="rgba(0,0,0,0.18)" strokeWidth="1.5" />
 
-      {/* ══ 5-barrel hinge hardware ════════════════════════════════════════
-          Straddles each outer frame edge (14 px outside, 12 px inside).   */}
-      {/* Left hinge  (x=36..62, frame left-edge at x=50) */}
-      <rect x="36" y="84" width="26" height="34" rx="5" fill={GOLD} />
-      {[91, 98, 106, 113].map(y => (
-        <line key={y} x1="36" y1={y} x2="62" y2={y}
-              stroke={G2} strokeWidth="1.2" opacity="0.65" />
-      ))}
-      {/* Hinge top highlight */}
-      <rect x="36" y="84" width="26" height="5" rx="5"
-            fill="rgba(255,255,255,0.22)" />
+      {/* ── Silver screws on frame face ──────────────────────────────────────
+          2 screws per side, on the outer rim, flush with the acetate face.
+          Left  frame outer rim: x=44→86  → cx=67
+          Right frame outer rim: x=454→496 → cx=473                       */}
+      <circle cx="67"  cy="68"  r="5.5" fill={SCREW}  />
+      <circle cx="67"  cy="68"  r="2.5" fill={SCREW2} />
+      <circle cx="67"  cy="138" r="5.5" fill={SCREW}  />
+      <circle cx="67"  cy="138" r="2.5" fill={SCREW2} />
 
-      {/* Right hinge  (x=462..488, frame right-edge at x=474) */}
-      <rect x="462" y="84" width="26" height="34" rx="5" fill={GOLD} />
-      {[91, 98, 106, 113].map(y => (
-        <line key={y} x1="462" y1={y} x2="488" y2={y}
-              stroke={G2} strokeWidth="1.2" opacity="0.65" />
-      ))}
-      <rect x="462" y="84" width="26" height="5" rx="5"
-            fill="rgba(255,255,255,0.22)" />
+      <circle cx="473" cy="68"  r="5.5" fill={SCREW}  />
+      <circle cx="473" cy="68"  r="2.5" fill={SCREW2} />
+      <circle cx="473" cy="138" r="5.5" fill={SCREW}  />
+      <circle cx="473" cy="138" r="2.5" fill={SCREW2} />
 
-      {/* ══ 4-hex screws on frame face ══════════════════════════════════════
-          Left  rim x=50–72  → cx=61
-          Right rim x=452–474 → cx=463                                     */}
-      <circle cx="61"  cy="80"  r="5" fill={GOLD} /><circle cx="61"  cy="80"  r="2.4" fill={G2} />
-      <circle cx="61"  cy="118" r="5" fill={GOLD} /><circle cx="61"  cy="118" r="2.4" fill={G2} />
-      <circle cx="463" cy="80"  r="5" fill={GOLD} /><circle cx="463" cy="80"  r="2.4" fill={G2} />
-      <circle cx="463" cy="118" r="5" fill={GOLD} /><circle cx="463" cy="118" r="2.4" fill={G2} />
-
-      {/* ══ Titanium nose pads — at bridge inner edges ══════════════════════ */}
-      <ellipse cx="244" cy="88" rx="3.5" ry="5.5" fill={GOLD} opacity="0.92" />
-      <ellipse cx="280" cy="88" rx="3.5" ry="5.5" fill={GOLD} opacity="0.92" />
-
-      {/* ══ Lens glare — single bar near top-left of each lens ══════════════ */}
-      <rect x="86"  y="60" width="50" height="7" rx="3.5"
+      {/* ── Lens glare bar ──────────────────────────────────────────────── */}
+      <rect x="100" y="68" width="44" height="7" rx="3.5"
             fill="white" fillOpacity="0.44" />
-      <rect x="318" y="60" width="50" height="7" rx="3.5"
+      <rect x="348" y="68" width="44" height="7" rx="3.5"
             fill="white" fillOpacity="0.44" />
 
-      {/* ══ Subtle DITA text on right temple ════════════════════════════════ */}
-      <text x="500" y="108" fontSize="6"
+      {/* ── DITA text on right temple ────────────────────────────────────── */}
+      <text x="518" y="108" fontSize="6"
             fill="rgba(255,255,255,0.07)"
             fontFamily="serif" letterSpacing="1.5" textAnchor="middle"
             style={{ userSelect: 'none' }}>DITA</text>
